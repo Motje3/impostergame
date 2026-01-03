@@ -9,11 +9,19 @@ import { useGameStore } from "@/store/gameStore";
 export default function PlayerSetupScreen() {
   const router = useRouter();
   const setPlayers = useGameStore((state) => state.setPlayers);
+  const lastPlayers = useGameStore((state) => state.lastPlayers);
 
   const [playerCount, setPlayerCount] = useState("");
   const [playerNames, setPlayerNames] = useState<string[]>([]);
   const [showNameInputs, setShowNameInputs] = useState(false);
   const prevCountRef = useRef<number>(0);
+
+  const loadLastPlayers = () => {
+    setPlayerCount(lastPlayers.length.toString());
+    setPlayerNames(lastPlayers);
+    prevCountRef.current = lastPlayers.length;
+    setShowNameInputs(true);
+  };
 
   useEffect(() => {
     const count = parseInt(playerCount);
@@ -80,6 +88,23 @@ export default function PlayerSetupScreen() {
               label="How many players?"
             />
           </Animated.View>
+
+          {lastPlayers.length >= 3 && !showNameInputs && (
+            <Animated.View entering={FadeInDown.duration(400).delay(300)}>
+              <View
+                className="mt-4 bg-surface rounded-xl p-4"
+                onTouchEnd={loadLastPlayers}
+              >
+                <Text className="text-gray-400 text-sm mb-1">Quick start</Text>
+                <Text className="text-white font-medium">
+                  Load last {lastPlayers.length} players
+                </Text>
+                <Text className="text-gray-500 text-sm mt-1">
+                  {lastPlayers.join(", ")}
+                </Text>
+              </View>
+            </Animated.View>
+          )}
 
           {showNameInputs && (
             <Animated.View

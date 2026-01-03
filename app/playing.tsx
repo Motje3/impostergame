@@ -7,7 +7,10 @@ import { useGameStore } from "@/store/gameStore";
 export default function PlayingScreen() {
   const router = useRouter();
   const players = useGameStore((state) => state.players);
+  const firstPlayerIndex = useGameStore((state) => state.firstPlayerIndex);
   const endGame = useGameStore((state) => state.endGame);
+
+  const firstPlayer = players[firstPlayerIndex];
 
   const handleEndGame = () => {
     endGame();
@@ -18,13 +21,14 @@ export default function PlayingScreen() {
     <View className="flex-1 bg-background justify-center items-center px-8">
       <Animated.View
         entering={FadeIn.duration(500)}
-        className="items-center mb-12"
+        className="items-center mb-8"
       >
-        <Text className="text-4xl font-bold text-white mb-4 text-center">
-          Game Started
+        <Text className="text-gray-400 text-lg mb-2">First turn goes to</Text>
+        <Text className="text-4xl font-bold text-primary mb-4 text-center">
+          {firstPlayer}
         </Text>
-        <Text className="text-gray-400 text-lg text-center mb-8">
-          Discuss and find the imposter
+        <Text className="text-gray-500 text-center">
+          Ask a question or give a hint about the word
         </Text>
       </Animated.View>
 

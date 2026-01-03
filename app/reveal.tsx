@@ -21,6 +21,8 @@ export default function RevealScreen() {
   const players = useGameStore((state) => state.players);
   const imposterIndex = useGameStore((state) => state.imposterIndex);
   const secretWord = useGameStore((state) => state.secretWord);
+  const secretHint = useGameStore((state) => state.secretHint);
+  const settings = useGameStore((state) => state.settings);
   const currentRevealIndex = useGameStore((state) => state.currentRevealIndex);
   const nextReveal = useGameStore((state) => state.nextReveal);
   const finishReveal = useGameStore((state) => state.finishReveal);
@@ -37,7 +39,14 @@ export default function RevealScreen() {
 
   const revealRole = () => {
     setIsRevealed(true);
+    translateY.value = 0;
   };
+
+  const tapGesture = Gesture.Tap().onEnd(() => {
+    if (!isRevealed) {
+      runOnJS(revealRole)();
+    }
+  });
 
   const panGesture = Gesture.Pan()
     .onUpdate((event) => {
@@ -47,13 +56,13 @@ export default function RevealScreen() {
     })
     .onEnd((event) => {
       if (!isRevealed && event.translationY < SWIPE_THRESHOLD) {
-        translateY.value = withTiming(-SCREEN_HEIGHT, { duration: 300 }, () => {
-          runOnJS(revealRole)();
-        });
+        runOnJS(revealRole)();
       } else {
         translateY.value = withSpring(0);
       }
     });
+
+  const composedGesture = Gesture.Race(tapGesture, panGesture);
 
   const animatedCardStyle = useAnimatedStyle(() => ({
     transform: [{ translateY: translateY.value }],
@@ -98,8 +107,8 @@ export default function RevealScreen() {
 
   return (
     <View className="flex-1 bg-background">
-      <GestureDetector gesture={panGesture}>
-        <View className="flex-1 justify-center items-center px-6">
+      <GestureDetector gesture={composedGesture}>
+        <Animated.View className="flex-1 justify-center items-center px-6">
           {!isRevealed ? (
             <Animated.View
               style={animatedCardStyle}
@@ -113,7 +122,7 @@ export default function RevealScreen() {
               </Text>
               <View className="items-center">
                 <Text className="text-gray-400 text-center mb-2">
-                  Swipe up to see your role
+                  Tap or swipe up to see your role
                 </Text>
                 <Animated.View className="w-1 h-12 bg-gray-600 rounded-full mt-2">
                   <Animated.View
@@ -137,11 +146,21 @@ export default function RevealScreen() {
                   <Text className="text-4xl font-bold text-danger mb-4">
                     You are the
                   </Text>
-                  <Text className="text-5xl font-bold text-danger mb-8">
+                  <Text className="text-5xl font-bold text-danger mb-4">
                     IMPOSTER
                   </Text>
+                  {settings.showHint && (
+                    <View className="bg-card rounded-xl px-4 py-3 mb-4">
+                      <Text className="text-gray-400 text-sm text-center mb-1">
+                        Hint
+                      </Text>
+                      <Text className="text-white text-xl font-medium text-center">
+                        {secretHint}
+                      </Text>
+                    </View>
+                  )}
                   <Text className="text-gray-400 text-center">
-                    Blend in and do not get caught
+                    Blend in and don't get caught!
                   </Text>
                 </>
               ) : (
@@ -164,7 +183,7 @@ export default function RevealScreen() {
               </View>
             </Animated.View>
           )}
-        </View>
+        </Animated.View>
       </GestureDetector>
     </View>
   );

@@ -4,7 +4,7 @@ import Animated, { FadeIn, FadeInDown } from "react-native-reanimated";
 import { Button } from "@/components/Button";
 import { Toggle } from "@/components/Toggle";
 import { useGameStore } from "@/store/gameStore";
-import { getRandomWord, getAvailableLanguages } from "@/data/words";
+import { getRandomWordWithHint, getAvailableLanguages } from "@/data/words";
 
 export default function GameSettingsScreen() {
   const router = useRouter();
@@ -15,8 +15,8 @@ export default function GameSettingsScreen() {
   const languages = getAvailableLanguages();
 
   const handleStartGame = () => {
-    const word = getRandomWord(settings.language);
-    startGame(word);
+    const { word, hint } = getRandomWordWithHint(settings.language);
+    startGame(word, hint);
     router.push("/reveal");
   };
 
@@ -40,7 +40,7 @@ export default function GameSettingsScreen() {
                 onTouchEnd={() => setSettings({ language: lang })}
               >
                 <Text className="text-white font-medium">
-                  {lang === "en" ? "English" : lang.toUpperCase()}
+                  {lang === "en" ? "English" : lang === "ar" ? "العربية" : lang.toUpperCase()}
                 </Text>
               </View>
             ))}
@@ -49,11 +49,21 @@ export default function GameSettingsScreen() {
       </Animated.View>
 
       <Animated.View entering={FadeInDown.duration(500).delay(400)}>
+        <View className="bg-surface rounded-2xl p-4 mb-4">
+          <Toggle
+            value={settings.showHint}
+            onValueChange={(value) => setSettings({ showHint: value })}
+            label="Give imposter a category hint"
+          />
+        </View>
+      </Animated.View>
+
+      <Animated.View entering={FadeInDown.duration(500).delay(500)}>
         <View className="bg-surface rounded-2xl p-4">
           <Toggle
             value={settings.allowGuess}
             onValueChange={(value) => setSettings({ allowGuess: value })}
-            label="Allow imposter to guess the word at the end"
+            label="Allow imposter to guess the word"
           />
         </View>
       </Animated.View>
